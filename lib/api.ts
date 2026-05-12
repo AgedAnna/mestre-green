@@ -1,4 +1,27 @@
-import type { ApiOffer, ApiTicket, ApiUser } from "./definitions";
+import type {
+  ApiBetHouse,
+  ApiBlogPost,
+  ApiCampaignStats,
+  ApiMarket,
+  ApiMatchResponse,
+  ApiNotification,
+  ApiOffer,
+  ApiPaymentMethod,
+  ApiRankingEntry,
+  ApiReferralDashboard,
+  ApiTeam,
+  ApiTicket,
+  ApiUser,
+  ApiVotesSummary,
+  AuthTokenResponse,
+  CheckoutPayload,
+  DeviceRegisterPayload,
+  PaginatedResponse,
+  PaymentMethodPayload,
+  RegistrationPayload,
+  TicketRequestPayload,
+  WithdrawPayload,
+} from "./definitions";
 
 const API_BASE = process.env.API_BASE ?? "https://api.mestregreen.com";
 
@@ -7,6 +30,24 @@ function apiUrl(path: string) {
   const p = path.startsWith("/") ? path : `/${path}`;
   return `${base}${p}`;
 }
+
+function qs(params: Record<string, string | number | boolean | undefined | null>): string {
+  const entries = Object.entries(params).filter(
+    ([, v]) => v !== undefined && v !== null
+  );
+  if (entries.length === 0) return "";
+  const usp = new URLSearchParams();
+  for (const [k, v] of entries) usp.set(k, String(v));
+  return `?${usp.toString()}`;
+}
+
+const emptyPage = <T>(page = 0, size = 20): PaginatedResponse<T> => ({
+  content: [],
+  totalElements: 0,
+  totalPages: 0,
+  number: page,
+  size,
+});
 
 // ─── Public fetch (no auth) ───────────────────────────────────────────────────
 
@@ -63,6 +104,146 @@ export async function apiMe(token: string): Promise<ApiUser> {
   return res.json();
 }
 
+export async function apiRegister(payload: RegistrationPayload): Promise<ApiUser> {
+  const res = await apiFetch("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || "Falha no cadastro.");
+  }
+  return res.json();
+}
+
+export async function apiRefresh(): Promise<AuthTokenResponse | null> {
+  const res = await apiFetch("/auth/refresh", { method: "POST" });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function apiLogout(token: string): Promise<boolean> {
+  const res = await authFetch(token, "/auth/logout", { method: "POST" });
+  return res.ok;
+}
+
+export async function apiRegisterDevice(
+  token: string,
+  payload: DeviceRegisterPayload
+): Promise<boolean> {
+  const res = await authFetch(token, "/auth/device/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return res.ok;
+}
+
+// ─── Users ───────────────────────────────────────────────────────────────────
+
+export async function getUsers(
+  token: string,
+  opts: { page?: number; size?: number } = {}
+): Promise<PaginatedResponse<ApiUser>> {
+  const { page = 0, size = 50 } = opts;
+  const res = await authFetch(token, `/users${qs({ page, size })}`);
+  if (!res.ok) return emptyPage<ApiUser>(page, size);
+  return res.json();
+}
+
+export type UpdateUserPayload = Partial<
+  Pick<
+    ApiUser,
+    | "username"
+    | "email"
+    | "phone"
+    | "fullName"
+    | "companyName"
+    | "birthDate"
+    | "profilePictureUrl"
+    | "favoriteTeamIds"
+    | "accountType"
+    | "roles"
+  >
+> & { password?: string; referralCode?: string };
+
+export async function updateUser(
+  token: string,
+  id: string | number,
+  payload: UpdateUserPayload
+): Promise<ApiUser | null> {
+  const res = await authFetch(token, `/users/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function deleteUser(token: string, id: string | number): Promise<boolean> {
+  const res = await authFetch(token, `/users/${id}`, { method: "DELETE" });
+  return res.ok;
+}
+
+export async function incrementUserClick(
+  token: string,
+  id: string | number
+): Promise<boolean> {
+  const res = await authFetch(token, `/users/${id}/click`, { method: "PATCH" });
+  return res.ok;
+}
+
+export async function updateFavoriteTeams(
+  token: string,
+  teamIds: number[]
+): Promise<ApiUser | null> {
+  const res = await authFetch(token, "/users/me/favorites", {
+    method: "PUT",
+    body: JSON.stringify(teamIds),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// ─── User payment methods ────────────────────────────────────────────────────
+
+export async function getPaymentMethods(token: string): Promise<ApiPaymentMethod[]> {
+  const res = await authFetch(token, "/users/me/payment-methods");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function addPaymentMethod(
+  token: string,
+  payload: PaymentMethodPayload
+): Promise<ApiPaymentMethod | null> {
+  const res = await authFetch(token, "/users/me/payment-methods", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function removePaymentMethod(
+  token: string,
+  id: string | number
+): Promise<boolean> {
+  const res = await authFetch(token, `/users/me/payment-methods/${id}`, {
+    method: "DELETE",
+  });
+  return res.ok;
+}
+
+export async function setDefaultPaymentMethod(
+  token: string,
+  id: string | number
+): Promise<boolean> {
+  const res = await authFetch(token, `/users/me/payment-methods/${id}/default`, {
+    method: "PATCH",
+  });
+  return res.ok;
+}
+
 // ─── Tickets ─────────────────────────────────────────────────────────────────
 
 export async function getOngoingTickets(token: string): Promise<ApiTicket[]> {
@@ -77,11 +258,105 @@ export async function getUpcomingTickets(token: string): Promise<ApiTicket[]> {
   return res.json();
 }
 
-export async function postTicketClick(token: string, ticketId: string | number) {
-  return authFetch(token, `/tickets/${ticketId}/click`, { method: "POST" });
+export async function getFinishedTickets(token: string): Promise<ApiTicket[]> {
+  const res = await authFetch(token, "/tickets/finished");
+  if (!res.ok) return [];
+  return res.json();
 }
 
-// ─── Offers / Promos ──────────────────────────────────────────────────────────
+export async function getTodayTomorrowTickets(token: string): Promise<ApiTicket[]> {
+  const res = await authFetch(token, "/tickets/today-tomorrow");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getTicketHistory(
+  token: string,
+  opts: { page?: number; size?: number } = {}
+): Promise<ApiTicket[]> {
+  const { page = 0, size = 20 } = opts;
+  const res = await authFetch(token, `/tickets/history${qs({ page, size })}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getVotesSummary(token: string): Promise<ApiVotesSummary | null> {
+  const res = await authFetch(token, "/tickets/votes");
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function postTicketClick(
+  token: string,
+  ticketId: string | number
+): Promise<boolean> {
+  const res = await authFetch(token, `/tickets/${ticketId}/click`, {
+    method: "POST",
+  });
+  return res.ok;
+}
+
+// ─── Ticket requests (user submissions) ──────────────────────────────────────
+
+export async function getMyTicketRequests(token: string): Promise<ApiTicket[]> {
+  const res = await authFetch(token, "/tickets/requests/me");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function createTicketRequest(
+  token: string,
+  payload: TicketRequestPayload
+): Promise<ApiTicket | null> {
+  const res = await authFetch(token, "/tickets/requests", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// ─── Matches ─────────────────────────────────────────────────────────────────
+
+export async function getMatches(token: string): Promise<ApiMatchResponse[]> {
+  const res = await authFetch(token, "/matches");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getTodayTomorrowMatches(
+  token: string
+): Promise<ApiMatchResponse[]> {
+  const res = await authFetch(token, "/matches/today-tomorrow");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// ─── Teams ───────────────────────────────────────────────────────────────────
+
+export async function getTeams(token: string): Promise<ApiTeam[]> {
+  const res = await authFetch(token, "/teams");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// ─── Markets ─────────────────────────────────────────────────────────────────
+
+export async function getMarkets(token: string): Promise<ApiMarket[]> {
+  const res = await authFetch(token, "/markets");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// ─── Bet houses ──────────────────────────────────────────────────────────────
+
+export async function getBetHouses(token: string): Promise<ApiBetHouse[]> {
+  const res = await authFetch(token, "/bet-houses");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// ─── Offers / Promos ─────────────────────────────────────────────────────────
 
 export async function getOffers(token: string): Promise<ApiOffer[]> {
   const res = await authFetch(token, "/offers");
@@ -89,8 +364,124 @@ export async function getOffers(token: string): Promise<ApiOffer[]> {
   return res.json();
 }
 
-export async function getOffer(token: string, id: string | number): Promise<ApiOffer | null> {
-  const res = await authFetch(token, `/offers/${id}`);
+/**
+ * The backend has no `GET /offers/{id}` route — we fetch the full list and pick by id.
+ * Mirrors what the mobile `PromoDetail` screen does.
+ */
+export async function getOffer(
+  token: string,
+  id: string | number
+): Promise<ApiOffer | null> {
+  const offers = await getOffers(token);
+  const numericId = Number(id);
+  return offers.find((o) => o.id === numericId) ?? null;
+}
+
+// ─── Blog ─────────────────────────────────────────────────────────────────────
+
+export async function getBlogPosts(token: string): Promise<ApiBlogPost[]> {
+  const res = await authFetch(token, "/blog-posts");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getBlogPost(
+  token: string,
+  id: string | number
+): Promise<ApiBlogPost | null> {
+  const res = await authFetch(token, `/blog-posts/${id}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+export async function getMyNotifications(
+  token: string,
+  opts: { page?: number; size?: number } = {}
+): Promise<PaginatedResponse<ApiNotification>> {
+  const { page = 0, size = 20 } = opts;
+  const res = await authFetch(token, `/notifications/mine${qs({ page, size })}`);
+  if (!res.ok) return emptyPage<ApiNotification>(page, size);
+  return res.json();
+}
+
+export async function getUnreadNotificationCount(token: string): Promise<number> {
+  const res = await authFetch(token, "/notifications/unread-count");
+  if (!res.ok) return 0;
+  const value = await res.json();
+  return typeof value === "number" ? value : Number(value) || 0;
+}
+
+export async function markNotificationRead(
+  token: string,
+  id: string | number
+): Promise<boolean> {
+  const res = await authFetch(token, `/notifications/${id}/read`, {
+    method: "PUT",
+  });
+  return res.ok;
+}
+
+export async function markAllNotificationsRead(token: string): Promise<boolean> {
+  const res = await authFetch(token, "/notifications/read-all", { method: "PUT" });
+  return res.ok;
+}
+
+// Admin/manager only — list every campaign with delivery stats.
+export async function getAllNotifications(
+  token: string,
+  opts: { page?: number; size?: number } = {}
+): Promise<PaginatedResponse<ApiCampaignStats>> {
+  const { page = 0, size = 20 } = opts;
+  const res = await authFetch(token, `/notifications/all${qs({ page, size })}`);
+  if (!res.ok) return emptyPage<ApiCampaignStats>(page, size);
+  return res.json();
+}
+
+// ─── Ranking ─────────────────────────────────────────────────────────────────
+
+export async function getRanking(
+  token: string,
+  opts: { company: string; page?: number; size?: number }
+): Promise<PaginatedResponse<ApiRankingEntry>> {
+  const { company, page = 0, size = 50 } = opts;
+  const res = await authFetch(token, `/ranking${qs({ company, page, size })}`);
+  if (!res.ok) return emptyPage<ApiRankingEntry>(page, size);
+  return res.json();
+}
+
+// ─── Referrals ───────────────────────────────────────────────────────────────
+
+export async function getReferralDashboard(
+  token: string
+): Promise<ApiReferralDashboard | null> {
+  const res = await authFetch(token, "/referrals/dashboard");
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function withdrawReferralBalance(
+  token: string,
+  payload: WithdrawPayload
+): Promise<boolean> {
+  const res = await authFetch(token, "/referrals/withdraw", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return res.ok;
+}
+
+// ─── Payments ────────────────────────────────────────────────────────────────
+
+export async function createCheckout(
+  token: string,
+  payload: CheckoutPayload
+): Promise<Record<string, unknown> | null> {
+  const res = await authFetch(token, "/payments/checkout", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
   if (!res.ok) return null;
   return res.json();
 }

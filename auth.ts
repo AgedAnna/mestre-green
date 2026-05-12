@@ -26,7 +26,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             accessToken: token,
             username: user.username,
             roles: user.roles,
-            accountType: user.accountType ?? "free",
+            accountType: user.accountType ?? "FREEMIUM",
           };
         } catch {
           return null;
