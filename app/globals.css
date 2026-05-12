@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Brand colors */
+  --color-brand-green:       #58CC02;
+  --color-brand-dark:        #040B00;
+  --color-brand-light-green: #C9FF93;
+  --color-brand-green-alt:   #57CB01;
+  --color-brand-gray:        #ACACAC;
+
+  /* Semantic aliases */
+  --color-background:        var(--color-brand-dark);
+  --color-surface:           #0D1A08;
+  --color-surface-card:      #111E0C;
+  --color-border:            #1F3014;
+  --color-foreground:        #FFFFFF;
+  --color-muted:             var(--color-brand-gray);
+  --color-primary:           var(--color-brand-green);
+  --color-primary-hover:     var(--color-brand-green-alt);
+  --color-primary-light:     var(--color-brand-light-green);
+
+  /* Typography */
+  --font-display: "Kurdis", "SF Pro Display", system-ui, sans-serif;
+  --font-body:    "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* Border radius */
+  --radius-card:   12px;
+  --radius-pill:   9999px;
+  --radius-button: 8px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Font face declarations */
+@font-face {
+  font-family: "Kurdis";
+  src: local("Kurdis SemiBold"), local("Kurdis-SemiBold");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-brand-dark);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-brand-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
 }
