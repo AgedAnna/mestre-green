@@ -29,10 +29,32 @@ export const RegisterSchema = z.object({
     .trim(),
 });
 
+// ─── Auth integration types (login / social / MFA / device verification) ─────
+
+export type SocialProvider = "google" | "apple";
+
+// Mirrors the mobile login flow (auth-client-enhanced.ts). The backend signals:
+//   200 → success · 202 → device_verification_required · 401 + "MFA" → mfa_required
+export type LoginOutcome =
+  | { type: "success"; token: string; expiresInSeconds?: number }
+  | { type: "device_verification_required" }
+  | { type: "mfa_required" };
+
+// Surfaced to the UI through NextAuth's CredentialsSignin `code`.
+export type LoginChallenge = "mfa_required" | "device_verification_required";
+
+// Response of POST /auth/mfa/setup.
+export type MfaSetupResponse = { secret: string; qrCodeUrl: string };
+
 // ─── Form state types ──────────────────────────────────────────────────────────
 
 export type LoginFormState =
-  | { errors?: { username?: string[]; password?: string[] }; message?: string }
+  | {
+      errors?: { username?: string[]; password?: string[] };
+      message?: string;
+      // When the backend asks for a second step, the UI can branch on this.
+      challenge?: LoginChallenge;
+    }
   | undefined;
 
 export type RegisterFormState =

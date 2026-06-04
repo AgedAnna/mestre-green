@@ -16,9 +16,12 @@ import type {
   AuthTokenResponse,
   CheckoutPayload,
   DeviceRegisterPayload,
+  LoginOutcome,
+  MfaSetupResponse,
   PaginatedResponse,
   PaymentMethodPayload,
   RegistrationPayload,
+  SocialProvider,
   TicketRequestPayload,
   WithdrawPayload,
 } from "./definitions";
@@ -134,6 +137,140 @@ export async function apiRegisterDevice(
   const res = await authFetch(token, "/auth/device/register", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+  return res.ok;
+}
+
+// ─── Auth: login with challenges, social, MFA, verification ──────────────────
+// These mirror the mobile client (service/auth/auth-client-enhanced.ts) so the
+// backend contract stays identical across clients. The UI layer drives them via
+// NextAuth (see auth.ts) and the server actions in lib/actions/auth.ts.
+
+/**
+ * Full login that distinguishes the three backend outcomes by HTTP status:
+ *   200 → success (token) · 202 → device_verification_required · 401+"MFA" → mfa_required.
+ * Any other 401 (bad credentials) or non-OK status throws.
+ * `mfaCode` is sent as a number; `deviceId` is optional (omit it to skip the
+ * device-verification flow entirely — the backend only challenges known users
+ * when a deviceId for an unrecognised device is supplied).
+ */
+export async function apiLoginOutcome(input: {
+  username: string;
+  password: string;
+  mfaCode?: number | null;
+  deviceId?: string | null;
+}): Promise<LoginOutcome> {
+  const body: Record<string, unknown> = {
+    username: input.username,
+    password: input.password,
+  };
+  if (input.mfaCode != null) body.mfaCode = input.mfaCode;
+  if (input.deviceId) body.deviceId = input.deviceId;
+
+  const res = await apiFetch("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+  if (res.status === 202) return { type: "device_verification_required" };
+
+  // Verified against the backend: any auth failure — bad credentials, locked
+  // account, OR "MFA required" — comes back as an EMPTY 403 (sometimes 401);
+  // Spring Security swallows the message, so they're indistinguishable here. We
+  // still scan the body for an "mfa" hint in case a backend version includes one.
+  if (res.status === 401 || res.status === 403) {
+    const text = await res.text().catch(() => "");
+    if (text.toLowerCase().includes("mfa")) return { type: "mfa_required" };
+    throw new Error(text || "Usuário ou senha incorretos.");
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || "Falha no login.");
+  }
+
+  const json = await res.json();
+  const token: string | undefined =
+    json?.accessToken ?? json?.access_token ?? json?.token;
+  if (!token) throw new Error("Resposta de login inválida.");
+  return { type: "success", token, expiresInSeconds: json?.expiresInSeconds };
+}
+
+/**
+ * Exchanges a Google/Apple identity token for the backend access token. The
+ * backend validates the token signature itself (reusing its existing
+ * GOOGLE_CLIENT_IDS / Apple config — no OAuth client secret on our side), so the
+ * UI only needs to obtain the provider idToken. `firstName`/`lastName` are used
+ * by Apple sign-up when the e-mail is hidden.
+ */
+export async function apiSocialLogin(
+  provider: SocialProvider,
+  token: string,
+  firstName?: string,
+  lastName?: string
+): Promise<string> {
+  const body: Record<string, unknown> = { token };
+  if (firstName) body.firstName = firstName;
+  if (lastName) body.lastName = lastName;
+
+  const res = await apiFetch(`/auth/${provider}`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || "Falha no login social.");
+  }
+  const json = await res.json();
+  const accessToken: string | undefined =
+    json?.accessToken ?? json?.access_token ?? json?.token;
+  if (!accessToken) throw new Error("Resposta de login social inválida.");
+  return accessToken;
+}
+
+/** Starts MFA enrolment for the logged-in user → returns the TOTP secret + QR URL. */
+export async function apiMfaSetup(token: string): Promise<MfaSetupResponse | null> {
+  const res = await authFetch(token, "/auth/mfa/setup", { method: "POST" });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+/** Confirms and activates MFA with the first 6-digit code from the authenticator app. */
+export async function apiMfaVerify(token: string, mfaCode: number): Promise<boolean> {
+  const res = await authFetch(token, "/auth/mfa/verify", {
+    method: "POST",
+    body: JSON.stringify({ mfaCode }),
+  });
+  return res.ok;
+}
+
+/** Confirms a newly-registered account with the 6-digit code e-mailed at sign-up. */
+export async function apiConfirmAccount(email: string, code: string): Promise<boolean> {
+  const res = await apiFetch("/auth/verification/confirm-account", {
+    method: "POST",
+    body: JSON.stringify({ email, code }),
+  });
+  return res.ok;
+}
+
+/** Trusts a new device after a 202 device-verification challenge. */
+export async function apiConfirmDevice(
+  email: string,
+  code: string,
+  deviceId: string
+): Promise<boolean> {
+  const res = await apiFetch("/auth/verification/confirm-device", {
+    method: "POST",
+    body: JSON.stringify({ email, code, deviceId }),
+  });
+  return res.ok;
+}
+
+/** Re-sends the account/device verification code to the user's e-mail. */
+export async function apiResendVerification(email: string): Promise<boolean> {
+  const res = await apiFetch("/auth/verification/resend", {
+    method: "POST",
+    body: JSON.stringify({ email }),
   });
   return res.ok;
 }
