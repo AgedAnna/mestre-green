@@ -1,6 +1,6 @@
 import type { ApiOffer, ApiTicket, ApiUser } from "./definitions";
 
-const API_BASE = process.env.API_BASE ?? "https://api.mestregreen.com";
+const API_BASE = "https://api.mestregreen.com";
 
 function apiUrl(path: string) {
   const base = API_BASE.endsWith("/") ? API_BASE.slice(0, -1) : API_BASE;
@@ -8,11 +8,10 @@ function apiUrl(path: string) {
   return `${base}${p}`;
 }
 
-// ─── Public fetch (no auth) ───────────────────────────────────────────────────
-
 async function apiFetch(path: string, init?: RequestInit) {
   const res = await fetch(apiUrl(path), {
     ...init,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...init?.headers,
@@ -23,7 +22,11 @@ async function apiFetch(path: string, init?: RequestInit) {
 
 // ─── Authenticated fetch ──────────────────────────────────────────────────────
 
-export async function authFetch(token: string, path: string, init?: RequestInit) {
+export async function authFetch(
+  token: string,
+  path: string,
+  init?: RequestInit
+) {
   return apiFetch(path, {
     ...init,
     headers: {
@@ -43,6 +46,21 @@ export async function apiLogin(
     method: "POST",
     body: JSON.stringify({ username, password }),
   });
+
+  // 202 → backend exige verificação de dispositivo/conta por e-mail
+  if (res.status === 202) {
+    throw new Error(
+      "Verifique sua conta pelo link enviado ao seu e-mail antes de entrar."
+    );
+  }
+
+  if (res.status === 401) {
+    const text = await res.text().catch(() => "");
+    if (text.toLowerCase().includes("mfa")) {
+      throw new Error("Autenticação em duas etapas (MFA) necessária.");
+    }
+    throw new Error("Usuário ou senha incorretos.");
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -74,7 +92,7 @@ export async function apiRegister(
 }
 
 export async function apiRequestPasswordReset(email: string): Promise<void> {
-  const res = await apiFetch("/auth/forgot-password", {
+  const res = await apiFetch("/auth/password/reset-request", {
     method: "POST",
     body: JSON.stringify({ email }),
   });
@@ -104,7 +122,10 @@ export async function getUpcomingTickets(token: string): Promise<ApiTicket[]> {
   return res.json();
 }
 
-export async function postTicketClick(token: string, ticketId: string | number) {
+export async function postTicketClick(
+  token: string,
+  ticketId: string | number
+) {
   return authFetch(token, `/tickets/${ticketId}/click`, { method: "POST" });
 }
 
@@ -116,7 +137,10 @@ export async function getOffers(token: string): Promise<ApiOffer[]> {
   return res.json();
 }
 
-export async function getOffer(token: string, id: string | number): Promise<ApiOffer | null> {
+export async function getOffer(
+  token: string,
+  id: string | number
+): Promise<ApiOffer | null> {
   const res = await authFetch(token, `/offers/${id}`);
   if (!res.ok) return null;
   return res.json();

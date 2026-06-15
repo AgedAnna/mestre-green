@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/login", "/cadastro"];
+// Não há rota de login — o acesso é só pelo modal. A home é a única rota pública.
+const PUBLIC_ROUTES = ["/"];
 
 export async function proxy(request: NextRequest) {
   const session = await auth();
@@ -12,14 +13,9 @@ export async function proxy(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Authenticated users trying to access login/cadastro → send to dashboard
-  if (session && (pathname === "/login" || pathname === "/cadastro")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  // Unauthenticated users trying to access private routes → send to login
+  // Usuários não autenticados em rotas privadas → voltam para a home (lá abrem o modal)
   if (!session && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();

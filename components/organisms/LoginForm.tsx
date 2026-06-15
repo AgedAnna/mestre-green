@@ -32,10 +32,10 @@ function LoginForm({ onModeChange }: LoginFormProps) {
       )}
 
       <FormField
-        label="E-mail"
+        label="Usuário"
         name="username"
-        type="email"
-        placeholder="seu@email.com"
+        type="text"
+        placeholder="Seu usuário"
         autoComplete="username"
         error={state?.errors?.username?.[0]}
         labelProps={labelProps}

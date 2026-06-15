@@ -61,34 +61,66 @@ function MobileNav({
             {links.map(({ href, label, icon: Icon }) => {
               const isActive =
                 pathname === href || pathname.startsWith(`${href}/`);
+              const inner = (
+                <>
+                  <span className="hamburger-nav__label">
+                    <Icon size={22} strokeWidth={2} aria-hidden />
+                    <span className="hamburger-nav__p">{label}</span>
+                  </span>
+                  <span className="hamburger-nav__dot" />
+                </>
+              );
               return (
                 <li key={href} className="hamburger-nav__li">
-                  <Link
-                    href={href}
-                    aria-current={isActive ? "page" : undefined}
-                    onClick={() => setOpen(false)}
-                    className="hamburger-nav__a"
-                  >
-                    <span className="hamburger-nav__label">
-                      <Icon size={22} strokeWidth={2} aria-hidden />
-                      <span className="hamburger-nav__p">{label}</span>
-                    </span>
-                    <span className="hamburger-nav__dot" />
-                  </Link>
+                  {isLoggedIn ? (
+                    <Link
+                      href={href}
+                      aria-current={isActive ? "page" : undefined}
+                      onClick={() => setOpen(false)}
+                      className="hamburger-nav__a"
+                    >
+                      {inner}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false);
+                        openLogin();
+                      }}
+                      className="hamburger-nav__a"
+                    >
+                      {inner}
+                    </button>
+                  )}
                 </li>
               );
             })}
           </ul>
 
           <div className="hamburger-nav__cta">
-            <Link
-              href="/premium"
-              onClick={() => setOpen(false)}
-              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
-            >
-              <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
-              Seja premium
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href="/premium"
+                onClick={() => setOpen(false)}
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
+              >
+                <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
+                Seja premium
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  openLogin();
+                }}
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
+              >
+                <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
+                Seja premium
+              </button>
+            )}
             {isLoggedIn ? (
               <>
                 <Link

@@ -7,7 +7,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  green: "bg-[#58CC02] text-[#040B00]",
+  green: "bg-[#58CC02] text-white",
   "light-green": "bg-[#C9FF93] text-[#040B00]",
   dark: "bg-[#1F3014] text-white",
   gray: "bg-[#ACACAC]/20 text-[#ACACAC]",
@@ -22,7 +22,7 @@ function Badge({
   return (
     <span
       className={[
-        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold",
+        "inline-flex items-center px-3 py-2 rounded-2xl text-xs font-semibold",
         variantStyles[variant],
         className,
       ]

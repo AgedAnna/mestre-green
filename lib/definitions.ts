@@ -3,10 +3,10 @@ import { z } from "zod";
 // ─── Auth schemas ──────────────────────────────────────────────────────────────
 
 export const LoginSchema = z.object({
-  // The API uses "username" field — we accept email format from the UI
+  // Login por nome de usuário (sem validação de e-mail)
   username: z
     .string()
-    .min(1, { message: "E-mail obrigatório." })
+    .min(1, { message: "Usuário obrigatório." })
     .trim(),
   password: z
     .string()

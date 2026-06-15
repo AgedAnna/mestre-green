@@ -57,13 +57,24 @@ function SiteHeader({ user }: SiteHeaderProps) {
         </Link>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/premium"
-            className="inline-flex items-center gap-2 h-10 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
-          >
-            <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
-            Seja premium
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/premium"
+              className="inline-flex items-center gap-2 h-10 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
+            >
+              <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
+              Seja premium
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openLogin()}
+              className="inline-flex items-center gap-2 h-10 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
+            >
+              <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
+              Seja premium
+            </button>
+          )}
 
           {isLoggedIn ? (
             <>
@@ -98,7 +109,11 @@ function SiteHeader({ user }: SiteHeaderProps) {
 
       <nav className="hidden md:flex items-center justify-between px-6 max-w-7xl mx-auto overflow-x-auto">
         {navLinks.map((item) => (
-          <NavItem key={item.href} {...item} />
+          <NavItem
+            key={item.href}
+            {...item}
+            onSelect={isLoggedIn ? undefined : () => openLogin()}
+          />
         ))}
       </nav>
 

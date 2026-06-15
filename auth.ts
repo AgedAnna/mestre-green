@@ -60,8 +60,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   pages: {
-    signIn: "/login",
-    error: "/login",
+    // Não há rota de login — o acesso é só pelo modal. Qualquer redirect
+    // do NextAuth cai na home, onde o modal pode ser aberto.
+    signIn: "/",
+    error: "/",
   },
   session: { strategy: "jwt" },
 });
