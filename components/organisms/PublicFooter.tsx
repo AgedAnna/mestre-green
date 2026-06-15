@@ -1,75 +1,106 @@
 import Link from "next/link";
+import Image from "next/image";
+import {
+  FaApple,
+  FaGooglePlay,
+  FaInstagram,
+  FaTiktok,
+  FaXTwitter,
+  FaYoutube,
+} from "react-icons/fa6";
+import logo from "@/public/logos/LOGO_MESTREGREEN_HORIZONTAL_3.webp";
+
+const LEGAL_LINKS = [
+  { href: "/termos", label: "Termos e Condições" },
+  { href: "/faq", label: "FAQ's" },
+  { href: "/privacidade", label: "Política de Privacidade" },
+];
+
+const SOCIALS = [
+  { href: "#", label: "Instagram", icon: FaInstagram },
+  { href: "#", label: "TikTok", icon: FaTiktok },
+  { href: "#", label: "X", icon: FaXTwitter },
+  { href: "#", label: "YouTube", icon: FaYoutube },
+];
 
 function PublicFooter() {
   return (
-    <footer className="bg-[#040B00] border-t border-[#1F3014] mt-auto">
-      <div className="max-w-screen-xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-10">
+    <footer className="bg-white border-t border-[#E2E1DF] mt-auto">
+      <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Logo + legal links */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-[#58CC02] flex items-center justify-center">
-              <span className="text-[#040B00] font-bold text-sm">MG</span>
-            </div>
-            <div className="leading-none">
-              <p className="font-display font-semibold text-white text-xs tracking-widest">MESTRE</p>
-              <p className="font-display font-semibold text-[#58CC02] text-xs tracking-widest">GREEN</p>
-            </div>
-          </div>
-          <nav className="flex flex-col gap-2">
-            <Link href="/termos" className="text-sm text-[#ACACAC] hover:text-white transition-colors">
-              Termos e Condições
-            </Link>
-            <Link href="/faq" className="text-sm text-[#ACACAC] hover:text-white transition-colors">
-              FAQ&apos;s
-            </Link>
-            <Link href="/privacidade" className="text-sm text-[#ACACAC] hover:text-white transition-colors">
-              Política de Privacidade
-            </Link>
+        <div className="flex flex-col gap-6 items-center text-center lg:items-start lg:text-left">
+          <Image src={logo} alt="Mestre Green" className="h-10 w-auto" />
+          <nav className="flex flex-col gap-2.5 items-center lg:items-start">
+            {LEGAL_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="text-sm text-[#6B6B6B] underline underline-offset-4 hover:text-[#131313] transition-colors w-fit"
+              >
+                {label}
+              </Link>
+            ))}
           </nav>
         </div>
 
         {/* App stores */}
-        <div className="flex flex-col gap-4">
-          <h3 className="text-sm font-semibold text-white">Aplicativos Móveis</h3>
-          <p className="text-sm text-[#ACACAC]">
-            Baixe nosso aplicativo e acesse muito mais funções e recursos exclusivos.
+        <div className="flex flex-col gap-4 items-center text-center lg:items-start lg:text-left">
+          <h3 className="text-base font-semibold text-[#131313]">
+            Aplicativos Móveis
+          </h3>
+          <p className="text-sm text-[#8A8A8A] max-w-xs">
+            Baixe nosso aplicativo e acesse muito mais funções e recursos
+            exclusivos
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col lg:flex-row items-center gap-3">
             <Link
               href="#"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1F3014] border border-[#1F3014] hover:border-[#58CC02]/30 transition-colors"
+              aria-label="Baixar na App Store"
+              className="flex items-center justify-center gap-2 w-44 lg:w-auto h-12 px-4 rounded-xl bg-black text-white hover:opacity-90 transition-opacity"
             >
-              <span className="text-xs text-white leading-tight">
-                <span className="block text-[10px] text-[#ACACAC]">Download on the</span>
-                App Store
+              <FaApple size={26} />
+              <span className="flex flex-col leading-none text-left">
+                <span className="text-[10px] font-light">Download on the</span>
+                <span className="text-base font-semibold -mt-0.5">
+                  App Store
+                </span>
               </span>
             </Link>
             <Link
               href="#"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1F3014] border border-[#1F3014] hover:border-[#58CC02]/30 transition-colors"
+              aria-label="Disponível no Google Play"
+              className="flex items-center justify-center gap-2 w-44 lg:w-auto h-12 px-4 rounded-xl bg-black text-white hover:opacity-90 transition-opacity"
             >
-              <span className="text-xs text-white leading-tight">
-                <span className="block text-[10px] text-[#ACACAC]">Get it on</span>
-                Google Play
+              <FaGooglePlay size={22} />
+              <span className="flex flex-col leading-none text-left">
+                <span className="text-[10px] font-light tracking-wide">
+                  GET IT ON
+                </span>
+                <span className="text-base font-semibold -mt-0.5">
+                  Google Play
+                </span>
               </span>
             </Link>
           </div>
         </div>
 
-        {/* Social */}
-        <div className="flex flex-col gap-4">
-          <h3 className="text-sm font-semibold text-white">Nos acompanhem</h3>
-          <p className="text-xs text-[#ACACAC]">
-            Copyright © Mestre Green todos os direitos reservados e recursos exclusivos.
+        <div className="flex flex-col gap-4 items-center text-center lg:items-start lg:text-left">
+          <h3 className="text-base font-semibold text-[#131313]">
+            Nos acompanhem
+          </h3>
+          <p className="text-sm text-[#8A8A8A] max-w-xs">
+            Copyright © Mestre Green todos os direitos reservados e recursos
+            exclusivos
           </p>
           <div className="flex items-center gap-3">
-            {["IG", "TK", "X", "YT"].map((s) => (
+            {SOCIALS.map(({ href, label, icon: Icon }) => (
               <Link
-                key={s}
-                href="#"
-                className="w-9 h-9 rounded-full bg-[#1F3014] flex items-center justify-center text-xs text-[#ACACAC] hover:bg-[#58CC02]/20 hover:text-[#58CC02] transition-colors"
+                key={label}
+                href={href}
+                aria-label={label}
+                className="w-10 h-10 rounded-full bg-[#ACACAC] flex items-center justify-center text-white hover:bg-[#58CC02] transition-colors"
               >
-                {s}
+                <Icon size={18} />
               </Link>
             ))}
           </div>

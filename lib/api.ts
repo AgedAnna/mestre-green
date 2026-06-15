@@ -57,6 +57,33 @@ export async function apiLogin(
   return token;
 }
 
+export async function apiRegister(
+  name: string,
+  email: string,
+  password: string
+): Promise<void> {
+  const res = await apiFetch("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ name, email, password }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || "Não foi possível criar a conta.");
+  }
+}
+
+export async function apiRequestPasswordReset(email: string): Promise<void> {
+  const res = await apiFetch("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Não foi possível enviar o e-mail de recuperação.");
+  }
+}
+
 export async function apiMe(token: string): Promise<ApiUser> {
   const res = await authFetch(token, "/auth/me");
   if (!res.ok) throw new Error("Sessão inválida.");

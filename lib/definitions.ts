@@ -14,19 +14,26 @@ export const LoginSchema = z.object({
     .trim(),
 });
 
-export const RegisterSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Nome deve ter pelo menos 2 caracteres." })
-    .trim(),
-  email: z
-    .string()
-    .email({ message: "E-mail inválido." })
-    .trim(),
-  password: z
-    .string()
-    .min(6, { message: "Senha deve ter pelo menos 6 caracteres." })
-    .trim(),
+export const RegisterSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, { message: "Nome deve ter pelo menos 2 caracteres." })
+      .trim(),
+    email: z.string().email({ message: "E-mail inválido." }).trim(),
+    password: z
+      .string()
+      .min(6, { message: "Senha deve ter pelo menos 6 caracteres." })
+      .trim(),
+    confirmPassword: z.string().trim(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem.",
+    path: ["confirmPassword"],
+  });
+
+export const ResetPasswordSchema = z.object({
+  email: z.string().email({ message: "E-mail inválido." }).trim(),
 });
 
 // ─── Form state types ──────────────────────────────────────────────────────────
@@ -41,8 +48,17 @@ export type RegisterFormState =
         name?: string[];
         email?: string[];
         password?: string[];
+        confirmPassword?: string[];
       };
       message?: string;
+    }
+  | undefined;
+
+export type ResetPasswordFormState =
+  | {
+      errors?: { email?: string[] };
+      message?: string;
+      success?: boolean;
     }
   | undefined;
 

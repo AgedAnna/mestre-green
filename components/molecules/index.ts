@@ -6,3 +6,5 @@ export type { TipCardProps } from "./TipCard";
 
 export { NavItem } from "./NavItem";
 export type { NavItemProps } from "./NavItem";
+
+export { LoginTrigger } from "./LoginTrigger";

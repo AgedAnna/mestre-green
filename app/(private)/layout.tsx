@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { PrivateHeader } from "@/components/organisms/PrivateHeader";
+import { SiteHeader } from "@/components/organisms";
 
 export default async function PrivateLayout({
   children,
@@ -12,7 +12,7 @@ export default async function PrivateLayout({
 
   return (
     <>
-      <PrivateHeader user={session.user} />
+      <SiteHeader user={session.user} />
       <main className="flex-1 max-w-screen-xl mx-auto w-full px-6 py-8">
         {children}
       </main>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TipCard } from "@/components/molecules";
+import { TipCard, LoginTrigger } from "@/components/molecules";
 import type { Tip } from "@/lib/types";
 
 // Placeholder data — will come from API/DB
@@ -86,12 +86,9 @@ export default function HomePage() {
             <p className="text-sm text-center text-[#ACACAC]">
               Faça login para ver todos os palpites
             </p>
-            <Link
-              href="/login"
-              className="text-sm font-semibold text-[#58CC02] hover:underline"
-            >
+            <LoginTrigger className="text-sm font-semibold text-[#58CC02] hover:underline">
               Entrar
-            </Link>
+            </LoginTrigger>
           </div>
         </div>
       </section>
@@ -132,12 +129,9 @@ export default function HomePage() {
             Entre na plataforma para acompanhar palpites ao vivo, próximos jogos e muito mais.
           </p>
         </div>
-        <Link
-          href="/login"
-          className="shrink-0 inline-flex items-center h-12 px-8 text-base rounded-full bg-[#58CC02] hover:bg-[#57CB01] text-[#040B00] font-semibold transition-colors"
-        >
+        <LoginTrigger className="shrink-0 inline-flex items-center h-12 px-8 text-base rounded-full bg-[#58CC02] hover:bg-[#57CB01] text-[#040B00] font-semibold transition-colors">
           Acessar conta
-        </Link>
+        </LoginTrigger>
       </section>
     </div>
   );
