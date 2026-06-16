@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TipCard, LoginTrigger, PromoCard } from "@/components/molecules";
+import { TipCard, PromoCard } from "@/components/molecules";
 import type { Tip } from "@/lib/types";
 import type { Promo } from "@/components/molecules";
 import mascote from "@/public/assets/mascote-mestregreen.webp";
