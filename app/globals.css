@@ -274,7 +274,7 @@ body {
 }
 
 /* ===========================================================
-   Chuva de bruxinhos 🧙🏽 (wizard rain)
+   Chuva de bruxinhos 🧙 (wizard rain) — renderizada em <canvas>
    =========================================================== */
 .wizard-rain-container {
   position: fixed;
@@ -282,37 +282,6 @@ body {
   z-index: 200;
   pointer-events: none;
   user-select: none;
-  overflow: hidden;
-}
-
-.wizard-rain-emoji {
-  position: absolute;
-  top: 0;
-  line-height: 1;
-  will-change: transform;
-  animation-name: wizard-rise;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-  animation-iteration-count: 1;
-}
-
-/* Sobe e balança numa única animação (translate3d = GPU) */
-@keyframes wizard-rise {
-  0% {
-    transform: translate3d(-12px, 100vh, 0) rotate(-6deg);
-  }
-  25% {
-    transform: translate3d(12px, 70vh, 0) rotate(6deg);
-  }
-  50% {
-    transform: translate3d(-12px, 40vh, 0) rotate(-6deg);
-  }
-  75% {
-    transform: translate3d(12px, 10vh, 0) rotate(6deg);
-  }
-  100% {
-    transform: translate3d(-12px, -20vh, 0) rotate(-6deg);
-  }
 }
 
 /* Scrollbar */

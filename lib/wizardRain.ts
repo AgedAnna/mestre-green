@@ -1,15 +1,25 @@
-// Chuva de bruxinhos 🧙 — sobem da base da viewport com tamanho, atraso e
-// velocidade aleatórios. CSS puro, um único elemento + uma animação por emoji
-// (sobe e balança juntos) para manter poucas camadas no compositor.
+// Chuva de bruxinhos 🧙 — renderizada num único <canvas> via requestAnimationFrame.
+// Uma só camada no compositor (sem dezenas de nós DOM animados), o que evita
+// travamentos mesmo sobre o backdrop-blur do modal.
 
 let running = false;
 
 const rnd = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
+  Math.random() * (max - min) + min;
+
+interface Wizard {
+  x: number;
+  size: number;
+  speed: number; // px por ms
+  delay: number; // ms
+  swayAmp: number;
+  swayFreq: number;
+  phase: number;
+}
 
 /**
- * Dispara a animação. `onComplete` é chamado quando a chuva já está bem
- * visível (ideal para então redirecionar). Reentrância é bloqueada.
+ * Dispara a animação. `onComplete` é chamado quando a chuva já está visível
+ * (ideal para então redirecionar). Reentrância é bloqueada.
  */
 export function wizardRain(onComplete?: () => void) {
   if (typeof document === "undefined") {
@@ -17,53 +27,86 @@ export function wizardRain(onComplete?: () => void) {
     return;
   }
 
-  // Respeita usuários que pedem menos animação
-  const reduceMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-  if (reduceMotion) {
-    onComplete?.();
-    return;
-  }
-
-  if (running) {
+  const reduceMotion = window.matchMedia?.(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+  if (reduceMotion || running) {
     onComplete?.();
     return;
   }
   running = true;
 
-  const container = document.createElement("div");
-  container.className = "wizard-rain-container";
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  const canvas = document.createElement("canvas");
+  canvas.className = "wizard-rain-container";
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    canvas.remove();
+    running = false;
+    onComplete?.();
+    return;
+  }
+  ctx.scale(dpr, dpr);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
 
   const QUANTITY = 20;
-  const fragment = document.createDocumentFragment();
-  let maxTime = 0;
+  const wizards: Wizard[] = Array.from({ length: QUANTITY }, () => ({
+    x: rnd(0, w),
+    size: rnd(28, 60),
+    speed: rnd(0.28, 0.55), // px/ms → sobe a tela em ~1,2–2,5s
+    delay: rnd(0, 600),
+    swayAmp: rnd(8, 22),
+    swayFreq: rnd(0.002, 0.004),
+    phase: rnd(0, Math.PI * 2),
+  }));
 
-  for (let i = 0; i < QUANTITY; i++) {
-    const scale = Math.random() * 0.5 + 0.5; // 0.5–1.0
-    const delay = rnd(0, 700);
-    const duration = rnd(1100, 1700);
-    maxTime = Math.max(maxTime, delay + duration);
+  const TOTAL = 2000;
+  const REDIRECT_AT = 900;
+  const start = performance.now();
+  let raf = 0;
+  let redirected = false;
 
-    const el = document.createElement("div");
-    el.className = "wizard-rain-emoji";
-    el.textContent = "🧙";
-    el.style.left = `${rnd(0, 100)}%`;
-    el.style.fontSize = `${(scale * 2.4).toFixed(2)}rem`;
-    el.style.animationDuration = `${duration}ms`;
-    el.style.animationDelay = `${delay}ms`;
-    fragment.appendChild(el);
+  function cleanup() {
+    cancelAnimationFrame(raf);
+    canvas.remove();
+    running = false;
   }
 
-  container.appendChild(fragment);
-  document.body.appendChild(container);
+  function frame(now: number) {
+    const t = now - start;
+    ctx!.clearRect(0, 0, w, h);
 
-  // Redireciona quando a chuva já está visível
-  window.setTimeout(() => onComplete?.(), Math.min(maxTime, 1000));
+    for (const p of wizards) {
+      const lt = t - p.delay;
+      if (lt < 0) continue;
+      const y = h + p.size - p.speed * lt;
+      if (y < -p.size) continue;
+      const x = p.x + Math.sin(p.phase + lt * p.swayFreq) * p.swayAmp;
+      ctx!.font = `${p.size}px serif`;
+      ctx!.fillText("🧙", x, y);
+    }
 
-  // Limpeza
-  window.setTimeout(() => {
-    container.remove();
-    running = false;
-  }, maxTime + 200);
+    if (t >= REDIRECT_AT && !redirected) {
+      redirected = true;
+      onComplete?.();
+    }
+
+    if (t < TOTAL) {
+      raf = requestAnimationFrame(frame);
+    } else {
+      cleanup();
+    }
+  }
+
+  raf = requestAnimationFrame(frame);
 }
