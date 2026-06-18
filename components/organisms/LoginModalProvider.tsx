@@ -35,6 +35,19 @@ function LoginModalProvider({ children }: { children: React.ReactNode }) {
   const closeLogin = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("login") !== "1") return;
+    openLogin();
+    params.delete("login");
+    const qs = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      window.location.pathname + (qs ? `?${qs}` : "")
+    );
+  }, [openLogin]);
+
+  useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
@@ -53,13 +66,11 @@ function LoginModalProvider({ children }: { children: React.ReactNode }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          {/* Blurred backdrop — closes on click */}
           <div
             onClick={closeLogin}
             className="fixed inset-0 bg-black/50 backdrop-blur-md"
             aria-hidden
           />
-          {/* Modal */}
           <div className="relative z-10 my-auto w-full max-w-3xl">
             <LoginCard key={mode} onClose={closeLogin} initialMode={mode} />
           </div>

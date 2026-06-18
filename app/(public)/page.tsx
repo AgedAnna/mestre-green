@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { TipCard, PromoCard } from "@/components/molecules";
+import { TipCard, MatchCard } from "@/components/molecules";
+import { PremiumPromos } from "@/components/organisms";
 import type { Tip } from "@/lib/types";
 import type { Promo } from "@/components/molecules";
 import mascote from "@/public/assets/mascote-mestregreen.webp";
@@ -25,8 +26,14 @@ const LIVE_TIPS: Tip[] = [
     id: "1",
     match: {
       id: "m1",
-      homeTeam: { name: "Barcelona", logo: "" },
-      awayTeam: { name: "Real Madrid", logo: "" },
+      homeTeam: {
+        name: "Barcelona",
+        logo: "https://media.api-sports.io/football/teams/529.png",
+      },
+      awayTeam: {
+        name: "Real Madrid",
+        logo: "https://media.api-sports.io/football/teams/541.png",
+      },
       league: "La Liga",
       minute: 44,
     },
@@ -38,8 +45,14 @@ const LIVE_TIPS: Tip[] = [
     id: "2",
     match: {
       id: "m2",
-      homeTeam: { name: "Barcelona", logo: "" },
-      awayTeam: { name: "Real Madrid", logo: "" },
+      homeTeam: {
+        name: "Barcelona",
+        logo: "https://media.api-sports.io/football/teams/529.png",
+      },
+      awayTeam: {
+        name: "Real Madrid",
+        logo: "https://media.api-sports.io/football/teams/541.png",
+      },
       league: "La Liga",
       minute: 44,
     },
@@ -51,14 +64,68 @@ const LIVE_TIPS: Tip[] = [
     id: "3",
     match: {
       id: "m3",
-      homeTeam: { name: "Barcelona", logo: "" },
-      awayTeam: { name: "Real Madrid", logo: "" },
+      homeTeam: {
+        name: "Barcelona",
+        logo: "https://media.api-sports.io/football/teams/529.png",
+      },
+      awayTeam: {
+        name: "Real Madrid",
+        logo: "https://media.api-sports.io/football/teams/541.png",
+      },
       league: "La Liga",
       minute: 44,
     },
     description: "6.5 gols na partida",
     odds: 3.45,
     isLive: true,
+  },
+];
+
+const crest = (id: number) =>
+  `https://media.api-sports.io/football/teams/${id}.png`;
+
+const UPCOMING_TIPS: Tip[] = [
+  {
+    id: "u1",
+    match: {
+      id: "um1",
+      homeTeam: { name: "Liverpool", logo: crest(40) },
+      awayTeam: { name: "Manchester City", logo: crest(50) },
+      league: "Premier League",
+      date: "17 Jun 2026",
+      time: "14h",
+    },
+    description: "+1.5 gols no primeiro tempo",
+    odds: 3.45,
+    isLive: false,
+  },
+  {
+    id: "u2",
+    match: {
+      id: "um2",
+      homeTeam: { name: "Barcelona", logo: crest(529) },
+      awayTeam: { name: "Real Madrid", logo: crest(541) },
+      league: "La Liga",
+      date: "18 Jun 2026",
+      time: "16h",
+    },
+    description: "Ambas as equipes marcam",
+    odds: 2.1,
+    isLive: false,
+  },
+  {
+    id: "u3",
+    match: {
+      id: "um3",
+      homeTeam: { name: "Flamengo", logo: crest(127) },
+      awayTeam: { name: "Palmeiras", logo: crest(121) },
+      league: "Brasileirão Série A",
+      date: "19 Jun 2026",
+      time: "21h",
+    },
+    description: "Mais de 2.5 gols",
+    odds: 1.85,
+    isLive: false,
   },
 ];
 
@@ -92,11 +159,7 @@ export default function HomePage() {
     <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-12">
       <section>
         <SectionHeader title="Promoções" href="/promocoes" />
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {PROMOS.map((promo) => (
-            <PromoCard key={promo.id} promo={promo} />
-          ))}
-        </div>
+        <PremiumPromos promos={PROMOS} />
       </section>
 
       <section>
@@ -109,7 +172,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section>
+      {/* <section>
         <SectionHeader title="Principais ligas" href="/ligas" />
         <div className="flex gap-4 overflow-x-auto pb-2">
           {LEAGUES.map((league) => (
@@ -130,10 +193,15 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
-      </section>
+      </section> */}
 
       <section>
-        <SectionHeader title="Próximos jogos" href="/promocoes" />
+        <SectionHeader title="Próximos jogos" href="/jogos" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {UPCOMING_TIPS.map((tip) => (
+            <MatchCard key={tip.id} tip={tip} />
+          ))}
+        </div>
       </section>
     </div>
   );

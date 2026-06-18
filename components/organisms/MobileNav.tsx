@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Crown, UserRound, type LucideIcon } from "lucide-react";
+import { Crown, UserRound, LogOut, type LucideIcon } from "lucide-react";
 import { useLoginModal } from "@/components/organisms/LoginModalProvider";
+import { usePremiumModal } from "@/components/organisms/PremiumModalProvider";
 import { logout } from "@/lib/actions/auth";
 
 interface NavLink {
@@ -27,6 +28,7 @@ function MobileNav({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { openLogin } = useLoginModal();
+  const { openPremium } = usePremiumModal();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -99,28 +101,17 @@ function MobileNav({
           </ul>
 
           <div className="hamburger-nav__cta">
-            {isLoggedIn ? (
-              <Link
-                href="/premium"
-                onClick={() => setOpen(false)}
-                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
-              >
-                <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
-                Seja premium
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  openLogin();
-                }}
-                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
-              >
-                <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
-                Seja premium
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                openPremium();
+              }}
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
+            >
+              <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
+              Seja premium
+            </button>
             {isLoggedIn ? (
               <>
                 <Link
@@ -134,8 +125,9 @@ function MobileNav({
                 <form action={logout}>
                   <button
                     type="submit"
-                    className="w-full text-sm text-[#ACACAC] hover:text-white transition-colors py-1"
+                    className="w-full inline-flex items-center justify-center gap-2 h-11 px-5 text-sm rounded-full bg-[#2A2A2A] hover:bg-[#3A3A3A] text-white font-semibold transition-colors"
                   >
+                    <LogOut size={16} strokeWidth={2.5} aria-hidden />
                     Sair
                   </button>
                 </form>

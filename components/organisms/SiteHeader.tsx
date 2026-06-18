@@ -6,13 +6,15 @@ import {
   Flame,
   Newspaper,
   BadgePercent,
-  Star,
+  CalendarDays,
   Crown,
   UserRound,
+  LogOut,
 } from "lucide-react";
 import { NavItem } from "@/components/molecules";
 import { MobileNav } from "@/components/organisms/MobileNav";
 import { useLoginModal } from "@/components/organisms/LoginModalProvider";
+import { usePremiumModal } from "@/components/organisms/PremiumModalProvider";
 import { logout } from "@/lib/actions/auth";
 import logo from "@/public/logos/LOGO_MESTREGREEN_HORIZONTAL_VERDE_BRANCO.webp";
 
@@ -21,33 +23,30 @@ interface SiteHeaderProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    accountType?: string | null;
   } | null;
 }
 
-const PROFILE_HREF = "/dashboard";
+const PROFILE_HREF = "/";
+const PREMIUM_BTN =
+  "inline-flex items-center gap-2 h-10 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors";
 
 function SiteHeader({ user }: SiteHeaderProps) {
   const isLoggedIn = !!user;
   const { openLogin } = useLoginModal();
+  const { openPremium } = usePremiumModal();
 
   const navLinks = [
-    {
-      href: isLoggedIn ? "/dashboard" : "/ao-vivo",
-      label: "Ao vivo",
-      icon: Flame,
-    },
+    { href: "/ao-vivo", label: "Ao vivo", icon: Flame },
     { href: "/noticias", label: "Notícias", icon: Newspaper },
     { href: "/promocoes", label: "Promoções", icon: BadgePercent },
-    { href: "/favoritos", label: "Favoritos", icon: Star },
+    { href: "/jogos", label: "Jogos", icon: CalendarDays },
   ];
 
   return (
     <header className="sticky top-0 z-40 bg-[#040B00] border-b border-border">
       <div className="flex items-center justify-between px-6 h-20 max-w-7xl mx-auto">
-        <Link
-          href={isLoggedIn ? "/dashboard" : "/"}
-          className="flex items-center shrink-0"
-        >
+        <Link href="/" className="flex items-center shrink-0">
           <Image
             src={logo}
             alt="Mestre Green"
@@ -57,24 +56,10 @@ function SiteHeader({ user }: SiteHeaderProps) {
         </Link>
 
         <div className="hidden md:flex items-center gap-3">
-          {isLoggedIn ? (
-            <Link
-              href="/premium"
-              className="inline-flex items-center gap-2 h-10 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
-            >
-              <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
-              Seja premium
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => openLogin()}
-              className="inline-flex items-center gap-2 h-10 px-5 text-sm rounded-full bg-[#C9FF93] hover:bg-[#C9FF93]/90 text-black font-semibold transition-colors"
-            >
-              <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
-              Seja premium
-            </button>
-          )}
+          <button type="button" onClick={() => openPremium()} className={PREMIUM_BTN}>
+            <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
+            Seja premium
+          </button>
 
           {isLoggedIn ? (
             <>
@@ -88,9 +73,11 @@ function SiteHeader({ user }: SiteHeaderProps) {
               <form action={logout}>
                 <button
                   type="submit"
-                  className="text-xs text-[#ACACAC] hover:text-white transition-colors"
+                  aria-label="Sair"
+                  title="Sair"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-[#ACACAC] hover:bg-white/10 hover:text-white transition-colors"
                 >
-                  Sair
+                  <LogOut size={18} strokeWidth={2} aria-hidden />
                 </button>
               </form>
             </>

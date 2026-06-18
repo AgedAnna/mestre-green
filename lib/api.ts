@@ -1,4 +1,13 @@
 import type { ApiOffer, ApiTicket, ApiUser } from "./definitions";
+import {
+  MOCK_AUTH_ENABLED,
+  MOCK_CREDENTIALS,
+  MOCK_TOKEN,
+  mockOffers,
+  mockOngoingTickets,
+  mockUpcomingTickets,
+  mockUser,
+} from "./mocks";
 
 const API_BASE = "https://api.mestregreen.com";
 
@@ -42,6 +51,17 @@ export async function apiLogin(
   username: string,
   password: string
 ): Promise<string> {
+  // DEV: só as credenciais mock "logam" e recebem o token fake.
+  if (MOCK_AUTH_ENABLED) {
+    if (
+      username === MOCK_CREDENTIALS.username &&
+      password === MOCK_CREDENTIALS.password
+    ) {
+      return MOCK_TOKEN;
+    }
+    throw new Error("Usuário ou senha incorretos.");
+  }
+
   const res = await apiFetch("/auth/login", {
     method: "POST",
     body: JSON.stringify({ username, password }),
@@ -103,6 +123,8 @@ export async function apiRequestPasswordReset(email: string): Promise<void> {
 }
 
 export async function apiMe(token: string): Promise<ApiUser> {
+  if (MOCK_AUTH_ENABLED) return mockUser;
+
   const res = await authFetch(token, "/auth/me");
   if (!res.ok) throw new Error("Sessão inválida.");
   return res.json();
@@ -111,12 +133,16 @@ export async function apiMe(token: string): Promise<ApiUser> {
 // ─── Tickets ─────────────────────────────────────────────────────────────────
 
 export async function getOngoingTickets(token: string): Promise<ApiTicket[]> {
+  if (MOCK_AUTH_ENABLED) return mockOngoingTickets;
+
   const res = await authFetch(token, "/tickets/ongoing");
   if (!res.ok) return [];
   return res.json();
 }
 
 export async function getUpcomingTickets(token: string): Promise<ApiTicket[]> {
+  if (MOCK_AUTH_ENABLED) return mockUpcomingTickets;
+
   const res = await authFetch(token, "/tickets/upcoming");
   if (!res.ok) return [];
   return res.json();
@@ -132,6 +158,8 @@ export async function postTicketClick(
 // ─── Offers / Promos ──────────────────────────────────────────────────────────
 
 export async function getOffers(token: string): Promise<ApiOffer[]> {
+  if (MOCK_AUTH_ENABLED) return mockOffers;
+
   const res = await authFetch(token, "/offers");
   if (!res.ok) return [];
   return res.json();
@@ -141,6 +169,10 @@ export async function getOffer(
   token: string,
   id: string | number
 ): Promise<ApiOffer | null> {
+  if (MOCK_AUTH_ENABLED) {
+    return mockOffers.find((o) => String(o.id) === String(id)) ?? null;
+  }
+
   const res = await authFetch(token, `/offers/${id}`);
   if (!res.ok) return null;
   return res.json();

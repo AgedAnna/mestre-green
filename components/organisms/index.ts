@@ -7,4 +7,10 @@ export { ResetPasswordForm } from "./ResetPasswordForm";
 export { LoginCard } from "./LoginCard";
 export type { AuthMode } from "./LoginCard";
 export { LoginModalProvider, useLoginModal } from "./LoginModalProvider";
+export {
+  PremiumModalProvider,
+  usePremiumModal,
+} from "./PremiumModalProvider";
+export { PremiumModal } from "./PremiumModal";
+export { PremiumPromos } from "./PremiumPromos";
 export { TipDetailModal } from "./TipDetailModal";

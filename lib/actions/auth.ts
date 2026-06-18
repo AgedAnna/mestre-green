@@ -32,7 +32,7 @@ export async function login(
     await signIn("credentials", {
       username: parsed.data.username,
       password: parsed.data.password,
-      redirectTo: "/dashboard",
+      redirectTo: "/",
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -71,7 +71,7 @@ export async function register(
     await signIn("credentials", {
       username: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: "/dashboard",
+      redirectTo: "/",
     });
   } catch (error) {
     if (error instanceof AuthError) {

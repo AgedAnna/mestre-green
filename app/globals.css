@@ -296,3 +296,35 @@ body {
   background: var(--color-border);
   border-radius: 3px;
 }
+
+/* Entrada suave de modais */
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modal-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-modal-fade {
+  animation: modal-fade-in 0.2s ease-out both;
+}
+.animate-modal-pop {
+  animation: modal-pop-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-modal-fade,
+  .animate-modal-pop {
+    animation: none;
+  }
+}

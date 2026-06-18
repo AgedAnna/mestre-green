@@ -1,7 +1,10 @@
 import { auth } from "@/auth";
-import { SiteHeader } from "@/components/organisms";
-import { PublicFooter } from "@/components/organisms";
-import { LoginModalProvider } from "@/components/organisms";
+import {
+  SiteHeader,
+  PublicFooter,
+  LoginModalProvider,
+  PremiumModalProvider,
+} from "@/components/organisms";
 
 export default async function PublicLayout({
   children,
@@ -12,9 +15,11 @@ export default async function PublicLayout({
 
   return (
     <LoginModalProvider>
-      <SiteHeader user={session?.user} />
-      <main className="flex-1 bg-white">{children}</main>
-      <PublicFooter />
+      <PremiumModalProvider>
+        <SiteHeader user={session?.user} />
+        <main className="flex-1 bg-white">{children}</main>
+        <PublicFooter />
+      </PremiumModalProvider>
     </LoginModalProvider>
   );
 }
