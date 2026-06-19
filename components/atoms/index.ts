@@ -6,3 +6,6 @@ export type { InputProps } from "./Input";
 
 export { Badge } from "./Badge";
 export type { BadgeProps } from "./Badge";
+
+export { TeamCrest } from "./TeamCrest";
+export type { TeamCrestProps } from "./TeamCrest";

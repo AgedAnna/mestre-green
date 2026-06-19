@@ -22,7 +22,7 @@ function Badge({
   return (
     <span
       className={[
-        "inline-flex items-center px-3 py-2 rounded-2xl text-xs font-semibold",
+        "inline-flex items-center px-6 py-2 rounded-2xl text-xs font-semibold",
         variantStyles[variant],
         className,
       ]

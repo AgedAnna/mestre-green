@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     // Imagens de promoções/ofertas vêm da API (offerImageLink)
     remotePatterns: [
       { protocol: "https", hostname: "**.mestregreen.com" },
+      { protocol: "https", hostname: "media.api-sports.io" },
     ],
   },
 };

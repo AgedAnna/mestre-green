@@ -97,12 +97,12 @@ function TipDetailModal({ tip, onClose }: TipDetailModalProps) {
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-black/50 backdrop-blur-md"
+        className="animate-modal-fade fixed inset-0 bg-black/50 backdrop-blur-md"
         aria-hidden
       />
 
       {/* Modal */}
-      <div className="relative z-10 my-auto w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl shadow-black/50 bg-[#EAF6D4]">
+      <div className="animate-modal-pop relative z-10 my-auto w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl shadow-black/50 bg-[#EAF6D4]">
         {/* Header verde com textura */}
         <div className="relative overflow-hidden bg-[#58CC02] px-6 pt-7 pb-8">
           <Image

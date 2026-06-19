@@ -4,6 +4,9 @@ export type { FormFieldProps } from "./FormField";
 export { TipCard } from "./TipCard";
 export type { TipCardProps } from "./TipCard";
 
+export { MatchCard } from "./MatchCard";
+export type { MatchCardProps } from "./MatchCard";
+
 export { PromoCard } from "./PromoCard";
 export type { Promo, PromoCardProps } from "./PromoCard";
 

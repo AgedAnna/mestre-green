@@ -1,23 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Lock } from "lucide-react";
+import { Plus, Lock, X } from "lucide-react";
 import type { Tip } from "@/lib/types";
-import { Badge } from "@/components/atoms";
+import { Badge, TeamCrest } from "@/components/atoms";
 import { useLoginModal } from "@/components/organisms/LoginModalProvider";
 import { TipDetailModal } from "@/components/organisms/TipDetailModal";
 
 interface TipCardProps {
   tip: Tip;
   onAddClick?: (tip: Tip) => void;
-  /** Exibe o card borrado com cadeado + mensagem (para usuários deslogados). */
   locked?: boolean;
   lockedMessage?: string;
 }
 
 const BASE =
-  "shrink-0 w-55 bg-black rounded-[12px] border border-border transition-colors";
-const LAYOUT = "p-4 flex flex-col gap-3";
+  "shrink-0 w-full max-w-72 bg-black rounded-[22px] border border-border transition-colors";
+const LAYOUT = "p-5 flex flex-col gap-4";
 
 function TipCard({
   tip,
@@ -31,32 +30,35 @@ function TipCard({
   const body = (
     <>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <div className="w-7 h-7 rounded-full bg-border flex items-center justify-center text-xs font-bold text-white/60">
-            {tip.match.homeTeam.name.charAt(0)}
-          </div>
-          <div className="w-7 h-7 rounded-full bg-border flex items-center justify-center text-xs font-bold text-white/60 -ml-2">
-            {tip.match.awayTeam.name.charAt(0)}
-          </div>
+        <div className="flex items-center gap-2">
+          <TeamCrest
+            name={tip.match.homeTeam.name}
+            logo={tip.match.homeTeam.logo}
+          />
+          <X size={16} strokeWidth={2.5} className="text-white" aria-hidden />
+          <TeamCrest
+            name={tip.match.awayTeam.name}
+            logo={tip.match.awayTeam.logo}
+          />
         </div>
         {tip.isLive && tip.match.minute != null && (
-          <span className="text-xs font-semibold text-[#58CC02]">
+          <span className="text-sm font-semibold text-[#58CC02]">
             {tip.match.minute}&apos;
           </span>
         )}
       </div>
 
-      <p className="text-[10px] text-[#ACACAC] uppercase tracking-wide">
+      <p className="text-[11px] text-[#ACACAC] uppercase tracking-wide">
         {tip.match.league}
       </p>
 
-      <h3 className="text-sm font-semibold text-white leading-tight">
+      <h3 className="text-base font-semibold text-white leading-tight">
         {tip.match.homeTeam.name} X {tip.match.awayTeam.name}
       </h3>
 
       <div>
-        <p className="text-[10px] text-[#58CC02]">Palpite da partida</p>
-        <p className="text-sm font-semibold text-[#58CC02]">
+        <p className="text-[11px] text-[#58CC02]">Palpite da partida</p>
+        <p className="text-base font-semibold text-[#58CC02]">
           {tip.description}
         </p>
       </div>
@@ -67,7 +69,7 @@ function TipCard({
             Odd {tip.odds.toFixed(2)}
           </Badge>
         </div>
-        <button
+        {/* <button
           onClick={(e) => {
             e.stopPropagation();
             onAddClick?.(tip);
@@ -76,7 +78,7 @@ function TipCard({
           aria-label="Adicionar palpite"
         >
           <Plus size={12} strokeWidth={2.5} aria-hidden />
-        </button>
+        </button> */}
       </div>
     </>
   );
@@ -84,7 +86,6 @@ function TipCard({
   if (locked) {
     return (
       <article className={`${BASE} relative overflow-hidden`}>
-        {/* Mesmo conteúdo, borrado e inerte */}
         <div
           className={`${LAYOUT} h-full blur-[3px] select-none pointer-events-none`}
           aria-hidden
