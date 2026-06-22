@@ -2,8 +2,14 @@
 // Configurar no .env.local: NEWS_API_BASE (host do app) e NEWS_API_KEY.
 // Endpoint: GET {NEWS_API_BASE}/api/public/feed  (auth via header x-api-key)
 
-const BASE = (process.env.NEWS_API_BASE ?? "").replace(/\/$/, "");
-const KEY = process.env.NEWS_API_KEY ?? "";
+// Defaults apontam pro feed ativo (valem quando nao ha .env.local, ex: clone do GitHub).
+// As envs NEWS_API_BASE / NEWS_API_KEY sobrescrevem. Trocar quando o app de noticias
+// sair do preview do Lovable para um dominio de producao.
+const BASE = (
+  process.env.NEWS_API_BASE ??
+  "https://project--b198a0dd-9e79-4f96-a67b-87856e54d036-dev.lovable.app"
+).replace(/\/$/, "");
+const KEY = process.env.NEWS_API_KEY ?? "chave_api_key";
 
 export type FeedItem = {
   title: string;
