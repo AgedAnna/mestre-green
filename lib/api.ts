@@ -9,7 +9,7 @@ import {
   mockUser,
 } from "./mocks";
 
-const API_BASE = "https://api.mestregreen.com";
+const API_BASE = process.env.API_BASE ?? "https://api.mestregreen.com";
 
 function apiUrl(path: string) {
   const base = API_BASE.endsWith("/") ? API_BASE.slice(0, -1) : API_BASE;
