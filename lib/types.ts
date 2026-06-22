@@ -20,8 +20,13 @@ export type MatchUI = {
 export type Tip = {
   id: string;
   match: MatchUI;
+  /** Mercado do palpite (betType), ex: "Resultado Final" */
+  market?: string;
+  /** Resultado/escolha para apostar (betChoice), ex: "Casa" */
   description: string;
   odds: number;
   isLive?: boolean;
+  /** Explicação do palpite (back: ticket.motivation) */
+  motivation?: string;
   offers?: ApiTicketOffer[];
 };

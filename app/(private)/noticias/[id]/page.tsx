@@ -1,47 +1,7 @@
 import { notFound } from "next/navigation";
+import { getArticleBySlug } from "@/lib/news";
 
-interface NewsArticle {
-  id: string;
-  category: string;
-  title: string;
-  subtitle: string;
-  content?: string;
-}
-
-const NEWS: NewsArticle[] = [
-  {
-    id: "1",
-    category: "Futebol Internacional",
-    title: "Buffon pede demissão da federação após Itália ficar fora da Copa do Mundo",
-    subtitle: "Ex-goleiro e ídolo histórico da Azzurra era o chefe de delegação da seleção",
-    content:
-      "Gianluigi Buffon pediu demissão do cargo de chefe de delegação da seleção italiana após a Azzurra ser eliminada nas eliminatórias e ficar de fora da Copa do Mundo pela segunda vez consecutiva. Em carta aberta à Federação Italiana de Futebol (FIGC), o ex-goleiro assumiu responsabilidade moral pelo fracasso e afirmou que não seria justo continuar no posto diante de um resultado tão decepcionante para o futebol do país.\n\nA eliminação italiana causou comoção na Europa. Buffon, que encerrou a carreira de jogador em 2023 após passagem pela seleção por mais de duas décadas, havia assumido o cargo administrativo com o objetivo de renovar a cultura do futebol nacional. A FIGC ainda não confirmou se aceitará ou não o pedido de demissão.",
-  },
-  {
-    id: "2",
-    category: "Futebol Internacional",
-    title: "Qual o grupo mais forte da Copa do Mundo? Veja lista com base no ranking da Fifa",
-    subtitle: "Levantamento considera o ranking atual da Fifa para determinar os grupos mais competitivos do torneio",
-  },
-  {
-    id: "3",
-    category: "Futebol Brasileiro",
-    title: "Flamengo confirma contratação e apresenta novo reforço para a temporada",
-    subtitle: "Jogador assinou contrato de dois anos e reforça o meio-campo do clube carioca",
-  },
-  {
-    id: "4",
-    category: "Champions League",
-    title: "Real Madrid vence nos pênaltis e avança às semifinais da Champions League",
-    subtitle: "Merengues sofrem mas superam o adversário e garantem vaga na próxima fase do torneio europeu",
-  },
-  {
-    id: "5",
-    category: "Futebol Internacional",
-    title: "Messi marca dois e lidera Argentina em amistoso preparatório para a Copa",
-    subtitle: "Camisa 10 mostrou estar em grande fase e deixou sua marca em vitória convincente da Albiceleste",
-  },
-];
+export const revalidate = 300;
 
 export default async function NoticiaPage({
   params,
@@ -49,33 +9,61 @@ export default async function NoticiaPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const article = NEWS.find((n) => n.id === id);
+  const article = await getArticleBySlug(id);
 
   if (!article) notFound();
 
+  const content = article.content ?? "";
+  const isHtml = /<\/?[a-z][\s\S]*>/i.test(content);
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 flex flex-col gap-6">
+      {article.category ? (
+        <span className="text-xs text-[#ACACAC] uppercase tracking-wide">
+          {article.category}
+        </span>
+      ) : null}
+
       <h1 className="text-4xl font-display font-semibold text-black leading-tight">
         {article.title}
       </h1>
 
-      <p className="text-xl text-gray-500 leading-relaxed">
-        {article.subtitle}
-      </p>
+      {article.excerpt ? (
+        <p className="text-xl text-gray-500 leading-relaxed">{article.excerpt}</p>
+      ) : null}
 
-      <div className="w-full aspect-video rounded-xl bg-gray-200 mt-2" />
+      {article.image_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={article.image_url}
+          alt={article.title}
+          className="w-full aspect-video rounded-xl object-cover mt-2 bg-gray-200"
+        />
+      ) : (
+        <div className="w-full aspect-video rounded-xl bg-gray-200 mt-2" />
+      )}
 
       <div className="rounded-xl bg-gray-50 border border-gray-100 p-8">
-        {article.content ? (
-          <div className="flex flex-col gap-4">
-            {article.content.split("\n\n").map((paragraph, i) => (
-              <p key={i} className="text-gray-700 text-lg leading-relaxed">
-                {paragraph}
-              </p>
-            ))}
-          </div>
+        {content ? (
+          isHtml ? (
+            <div
+              className="text-gray-700 text-lg leading-relaxed [&_p]:mb-4 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-4 [&_a]:text-[#58CC02] [&_a]:underline [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_img]:rounded-lg [&_img]:my-4"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
+          ) : (
+            <div className="flex flex-col gap-4">
+              {content.split(/\n\n+/).map((paragraph, i) => (
+                <p
+                  key={i}
+                  className="text-gray-700 text-lg leading-relaxed whitespace-pre-line"
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          )
         ) : (
-          <p className="text-gray-300 text-sm">Conteúdo da notícia...</p>
+          <p className="text-gray-300 text-sm">Conteúdo indisponível.</p>
         )}
       </div>
     </div>

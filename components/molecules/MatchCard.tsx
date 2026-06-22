@@ -56,7 +56,9 @@ function MatchCard({ tip }: MatchCardProps) {
 
         <div className="flex items-center justify-between gap-3 px-4 py-4 sm:px-5">
           <div className="min-w-0">
-            <p className="text-[11px] text-[#58CC02]">Palpite da partida</p>
+            <p className="text-[11px] text-[#ACACAC] uppercase tracking-wide">
+              {tip.market ?? "Palpite da partida"}
+            </p>
             <p className="truncate text-base font-semibold text-[#58CC02]">
               {tip.description}
             </p>

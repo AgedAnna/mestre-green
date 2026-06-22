@@ -57,7 +57,9 @@ function TipCard({
       </h3>
 
       <div>
-        <p className="text-[11px] text-[#58CC02]">Palpite da partida</p>
+        <p className="text-[11px] text-[#ACACAC] uppercase tracking-wide">
+          {tip.market ?? "Palpite da partida"}
+        </p>
         <p className="text-base font-semibold text-[#58CC02]">
           {tip.description}
         </p>
