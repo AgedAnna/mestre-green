@@ -3,10 +3,18 @@ import { TipCard, MatchCard } from "@/components/molecules";
 import { PremiumPromos } from "@/components/organisms";
 import type { Tip } from "@/lib/types";
 import type { Promo } from "@/components/molecules";
+import type { ApiOffer } from "@/lib/definitions";
 import mascote from "@/public/assets/mascote-mestregreen.webp";
+import { getSession } from "@/lib/devAuth";
+import { getOngoingTickets, getUpcomingTickets, getOffers } from "@/lib/api";
+import { ticketToTip } from "@/lib/mappers";
+
+// ─── Fallbacks (teaser) ────────────────────────────────────────────────────────
+// Exibidos para visitantes DESLOGADOS (sem token para chamar a API) ou enquanto
+// não há dados reais. Quando logado, as seções abaixo usam os dados da API.
 
 // TODO: trocar `image` pela arte real de cada promoção (offerImageLink da API)
-const PROMOS: Promo[] = [
+const FALLBACK_PROMOS: Promo[] = [
   {
     id: "1",
     title: "50% de desconto na sua assinatura anual.",
@@ -21,19 +29,16 @@ const PROMOS: Promo[] = [
   },
 ];
 
-const LIVE_TIPS: Tip[] = [
+const crest = (id: number) =>
+  `https://media.api-sports.io/football/teams/${id}.png`;
+
+const FALLBACK_LIVE_TIPS: Tip[] = [
   {
     id: "1",
     match: {
       id: "m1",
-      homeTeam: {
-        name: "Barcelona",
-        logo: "https://media.api-sports.io/football/teams/529.png",
-      },
-      awayTeam: {
-        name: "Real Madrid",
-        logo: "https://media.api-sports.io/football/teams/541.png",
-      },
+      homeTeam: { name: "Barcelona", logo: crest(529) },
+      awayTeam: { name: "Real Madrid", logo: crest(541) },
       league: "La Liga",
       minute: 44,
     },
@@ -45,46 +50,31 @@ const LIVE_TIPS: Tip[] = [
     id: "2",
     match: {
       id: "m2",
-      homeTeam: {
-        name: "Barcelona",
-        logo: "https://media.api-sports.io/football/teams/529.png",
-      },
-      awayTeam: {
-        name: "Real Madrid",
-        logo: "https://media.api-sports.io/football/teams/541.png",
-      },
-      league: "La Liga",
-      minute: 44,
+      homeTeam: { name: "Liverpool", logo: crest(40) },
+      awayTeam: { name: "Manchester City", logo: crest(50) },
+      league: "Premier League",
+      minute: 31,
     },
-    description: "6.5 gols na partida",
-    odds: 3.45,
+    description: "Ambas as equipes marcam",
+    odds: 2.1,
     isLive: true,
   },
   {
     id: "3",
     match: {
       id: "m3",
-      homeTeam: {
-        name: "Barcelona",
-        logo: "https://media.api-sports.io/football/teams/529.png",
-      },
-      awayTeam: {
-        name: "Real Madrid",
-        logo: "https://media.api-sports.io/football/teams/541.png",
-      },
-      league: "La Liga",
-      minute: 44,
+      homeTeam: { name: "Flamengo", logo: crest(127) },
+      awayTeam: { name: "Palmeiras", logo: crest(121) },
+      league: "Brasileirão Série A",
+      minute: 12,
     },
-    description: "6.5 gols na partida",
-    odds: 3.45,
+    description: "Mais de 2.5 gols",
+    odds: 1.85,
     isLive: true,
   },
 ];
 
-const crest = (id: number) =>
-  `https://media.api-sports.io/football/teams/${id}.png`;
-
-const UPCOMING_TIPS: Tip[] = [
+const FALLBACK_UPCOMING_TIPS: Tip[] = [
   {
     id: "u1",
     match: {
@@ -129,16 +119,16 @@ const UPCOMING_TIPS: Tip[] = [
   },
 ];
 
-const LEAGUES = [
-  { id: "1", name: "Bundesliga", color: "#E32221" },
-  { id: "2", name: "Serie A", color: "#1A3E6C" },
-  { id: "3", name: "La Liga", color: "#EF4135" },
-  { id: "4", name: "Premier League", color: "#380045" },
-  { id: "5", name: "Champions League", color: "#003B82" },
-  { id: "6", name: "Copa do Mundo", color: "#1A4087" },
-  { id: "7", name: "Campeonato Brasileiro A", color: "#097A39" },
-  { id: "8", name: "Conmebol Libertadores", color: "#1A1A1A" },
-];
+// Converte uma offer da API no formato `Promo`. A imagem fica no mascote
+// (placeholder) até existir arte real + o domínio liberado no next.config.
+function offerToPromo(o: ApiOffer): Promo {
+  return {
+    id: o.id,
+    title: o.name,
+    href: o.offerButtonLink || "/promocoes",
+    image: mascote,
+  };
+}
 
 function SectionHeader({ title, href }: { title: string; href: string }) {
   return (
@@ -154,51 +144,57 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await getSession();
+  const token = (session as any)?.accessToken as string | undefined;
+
+  // Logado: puxa dados reais da API. Deslogado: arrays vazios → cai no teaser.
+  const [liveTickets, upcomingTickets, offers] = token
+    ? await Promise.all([
+        getOngoingTickets(token),
+        getUpcomingTickets(token),
+        getOffers(token),
+      ])
+    : [[], [], []];
+
+  const liveFromApi = liveTickets.map((t) => ticketToTip(t, true));
+  const upcomingFromApi = upcomingTickets
+    .sort(
+      (a, b) =>
+        new Date(a.matches[0].startTime).getTime() -
+        new Date(b.matches[0].startTime).getTime()
+    )
+    .map((t) => ticketToTip(t, false));
+  const promosFromApi = offers.map(offerToPromo);
+
+  // Usa os dados reais quando existem; senão, mantém o teaser.
+  const liveTips = liveFromApi.length ? liveFromApi.slice(0, 6) : FALLBACK_LIVE_TIPS;
+  const upcomingTips = upcomingFromApi.length
+    ? upcomingFromApi.slice(0, 6)
+    : FALLBACK_UPCOMING_TIPS;
+  const promos = promosFromApi.length ? promosFromApi : FALLBACK_PROMOS;
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-12">
       <section>
         <SectionHeader title="Promoções" href="/promocoes" />
-        <PremiumPromos promos={PROMOS} />
+        <PremiumPromos promos={promos} />
       </section>
 
       <section>
         <SectionHeader title="Palpites ao vivo" href="/ao-vivo" />
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {LIVE_TIPS.map((tip) => (
+          {liveTips.map((tip) => (
             <TipCard key={tip.id} tip={tip} />
           ))}
-          <TipCard tip={LIVE_TIPS[0]} locked />
+          <TipCard tip={liveTips[0]} locked />
         </div>
       </section>
-
-      {/* <section>
-        <SectionHeader title="Principais ligas" href="/ligas" />
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {LEAGUES.map((league) => (
-            <Link
-              key={league.id}
-              href={`/ligas/${league.id}`}
-              className="shrink-0 flex flex-col items-center gap-2 group"
-            >
-              <div
-                className="w-16 h-16 rounded-[14px] flex items-center justify-center text-white font-bold text-xs text-center px-1 transition-transform group-hover:scale-105"
-                style={{ backgroundColor: league.color }}
-              >
-                {league.name.slice(0, 2).toUpperCase()}
-              </div>
-              <span className="text-[10px] text-[#ACACAC] text-center w-16 leading-tight">
-                {league.name}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section> */}
 
       <section>
         <SectionHeader title="Próximos jogos" href="/jogos" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {UPCOMING_TIPS.map((tip) => (
+          {upcomingTips.map((tip) => (
             <MatchCard key={tip.id} tip={tip} />
           ))}
         </div>
