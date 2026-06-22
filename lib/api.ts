@@ -9,7 +9,9 @@ import {
   mockUser,
 } from "./mocks";
 
-const API_BASE = process.env.API_BASE ?? "https://api.mestregreen.com";
+// Default aponta pro backend ativo no VPS (vale quando nao ha .env.local, ex: clone do GitHub).
+// A env API_BASE sobrescreve localmente. Trocar quando houver dominio/HTTPS de producao.
+const API_BASE = process.env.API_BASE ?? "http://2.24.116.68:8080";
 
 function apiUrl(path: string) {
   const base = API_BASE.endsWith("/") ? API_BASE.slice(0, -1) : API_BASE;
