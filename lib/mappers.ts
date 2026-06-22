@@ -27,9 +27,11 @@ export function ticketToTip(ticket: ApiTicket, isLive: boolean): Tip {
       date: `${startTime.getDate()} ${MESES[startTime.getMonth()]} ${startTime.getFullYear()}`,
       time: `${String(startTime.getHours()).padStart(2, "0")}h`,
     },
+    market: match.betTypes?.[0],
     description: match.betChoices?.[0] ?? "Palpite da partida",
     odds: primaryOffer?.odd ?? 0,
     isLive,
+    motivation: ticket.motivation ?? undefined,
     offers: ticket.offers,
   };
 }

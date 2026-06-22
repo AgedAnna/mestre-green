@@ -109,6 +109,7 @@ export type ApiTicket = {
   betAmount: number;
   profitable: boolean | null;
   earlyPayment: boolean;
+  motivation?: string | null;
   matches: ApiMatch[];
   offers: ApiTicketOffer[];
 };
