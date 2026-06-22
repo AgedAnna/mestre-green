@@ -80,7 +80,12 @@ export function wizardRain(onComplete?: () => void) {
     cancelAnimationFrame(raf);
     canvas.remove();
     running = false;
+    window.removeEventListener("pagehide", cleanup);
   }
+
+  // Ao navegar para a casa de aposta (ou bfcache), garante que o canvas saia e
+  // o estado reseta — senão a animação "vaza" e trava a tela ao voltar.
+  window.addEventListener("pagehide", cleanup);
 
   function frame(now: number) {
     const t = now - start;

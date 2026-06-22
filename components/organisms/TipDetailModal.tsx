@@ -66,6 +66,14 @@ function TipDetailModal({ tip, onClose }: TipDetailModalProps) {
 
   const offers = tip.offers ?? [];
 
+  // Fecha o modal (restaura o scroll do body e desmonta o overlay) antes de
+  // disparar a chuva + redirecionar. Sem isso, a navegação não roda o cleanup
+  // do useEffect e a tela volta travada ao usar o "voltar" do navegador.
+  function handleBet(href: string) {
+    onClose();
+    goToBet(href);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
       {/* Backdrop */}
@@ -154,7 +162,7 @@ function TipDetailModal({ tip, onClose }: TipDetailModalProps) {
                 >
                   <button
                     type="button"
-                    onClick={() => goToBet(offer.ticketLink || "#")}
+                    onClick={() => handleBet(offer.ticketLink || "#")}
                     className="inline-flex items-center justify-center h-9 px-3 rounded-md text-xs font-extrabold tracking-tight truncate bg-[#040B00] text-white hover:opacity-90 transition-opacity"
                     aria-label={`Apostar na ${offer.betHouseName}`}
                   >
@@ -162,7 +170,7 @@ function TipDetailModal({ tip, onClose }: TipDetailModalProps) {
                   </button>
                   <OddPill
                     value={offer.odd.toFixed(2)}
-                    onClick={() => goToBet(offer.ticketLink || "#")}
+                    onClick={() => handleBet(offer.ticketLink || "#")}
                   />
                 </div>
               ))

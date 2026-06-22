@@ -125,7 +125,7 @@ function offerToPromo(o: ApiOffer): Promo {
   return {
     id: o.id,
     title: o.name,
-    href: o.offerButtonLink || "/promocoes",
+    href: `/promocoes/${o.id}`,
     image: mascote,
   };
 }
@@ -147,6 +147,7 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
 export default async function HomePage() {
   const session = await getSession();
   const token = (session as any)?.accessToken as string | undefined;
+  const isLoggedIn = !!token;
 
   // Logado: puxa dados reais da API. Deslogado: arrays vazios → cai no teaser.
   const [liveTickets, upcomingTickets, offers] = token
@@ -184,10 +185,11 @@ export default async function HomePage() {
       <section>
         <SectionHeader title="Palpites ao vivo" href="/ao-vivo" />
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {liveTips.map((tip) => (
-            <TipCard key={tip.id} tip={tip} />
+          {/* Deslogado: até 3 liberados, o resto bloqueado. Logado: todos liberados. */}
+          {liveTips.map((tip, i) => (
+            <TipCard key={tip.id} tip={tip} locked={!isLoggedIn && i >= 3} />
           ))}
-          <TipCard tip={liveTips[0]} locked />
+          {!isLoggedIn && <TipCard tip={liveTips[0]} locked />}
         </div>
       </section>
 

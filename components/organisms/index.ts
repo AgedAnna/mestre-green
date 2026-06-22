@@ -12,5 +12,10 @@ export {
   usePremiumModal,
 } from "./PremiumModalProvider";
 export { PremiumModal } from "./PremiumModal";
+export {
+  ProfileModalProvider,
+  useProfileModal,
+} from "./ProfileModalProvider";
+export { ProfileModal } from "./ProfileModal";
 export { PremiumPromos } from "./PremiumPromos";
 export { TipDetailModal } from "./TipDetailModal";

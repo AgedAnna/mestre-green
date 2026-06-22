@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getSession } from "@/lib/devAuth";
 import { getOffers } from "@/lib/api";
 
@@ -8,42 +9,56 @@ export default async function PromocoesPage() {
   const offers = token ? await getOffers(token) : [];
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-display font-semibold text-black">
-          Promoções
-        </h1>
-        <p className="text-sm text-[#ACACAC] mt-1">
-          Bônus e ofertas das casas de apostas parceiras
-        </p>
-      </div>
-
+    <div className="w-full px-6 py-8 md:w-3/5 md:px-0 mx-auto">
       {offers.length === 0 ? (
-        <p className="text-sm text-[#ACACAC] py-12 text-center">
+        <p className="py-16 text-center text-sm text-[#ACACAC]">
           Nenhuma promoção disponível no momento.
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <ul className="divide-y divide-gray-100">
           {offers.map((offer) => (
-            <a
+            <li
               key={offer.id}
-              href={offer.offerButtonLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex flex-col gap-3 rounded-2xl bg-[#58CC02] p-6 hover:bg-[#57CB01] transition-colors"
+              className="flex flex-col md:flex-row gap-4 md:gap-5 md:items-center md:min-h-[calc((100dvh-12rem)/2)] py-6"
             >
-              <h2 className="font-display font-semibold text-[#040B00] text-lg leading-snug">
-                {offer.name}
-              </h2>
-              <p className="text-sm text-[#040B00]/70 flex-1">
-                {offer.offerDescription}
-              </p>
-              <span className="w-fit text-sm font-semibold text-[#040B00] underline underline-offset-2 transition-opacity group-hover:opacity-80">
-                Saiba mais
-              </span>
-            </a>
+              <Link
+                href={`/promocoes/${offer.id}`}
+                className="w-full h-52 md:shrink-0 md:w-64 md:h-44 rounded-xl bg-gray-200 hover:opacity-90 transition-opacity overflow-hidden"
+              >
+                {offer.offerImageLink ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={offer.offerImageLink}
+                    alt={offer.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : null}
+              </Link>
+
+              <div className="flex flex-col gap-3 flex-1 min-w-0 overflow-hidden justify-center">
+                <span className="text-xs text-[#ACACAC] uppercase tracking-wide">
+                  Promoção
+                </span>
+                <Link href={`/promocoes/${offer.id}`} className="group">
+                  <h2 className="text-xl md:text-3xl font-display font-semibold text-black leading-snug w-full wrap-break-word group-hover:text-[#58CC02] transition-colors">
+                    {offer.name}
+                  </h2>
+                </Link>
+                {offer.offerDescription ? (
+                  <p className="text-sm text-gray-500 line-clamp-2">
+                    {offer.offerDescription}
+                  </p>
+                ) : null}
+                <Link
+                  href={`/promocoes/${offer.id}`}
+                  className="text-sm text-[#58CC02] hover:text-[#C9FF93] transition-colors mt-1"
+                >
+                  Saiba mais...
+                </Link>
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

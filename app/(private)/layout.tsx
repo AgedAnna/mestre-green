@@ -4,6 +4,7 @@ import {
   SiteHeader,
   LoginModalProvider,
   PremiumModalProvider,
+  ProfileModalProvider,
   PublicFooter,
 } from "@/components/organisms";
 
@@ -18,11 +19,13 @@ export default async function PrivateLayout({
   return (
     <LoginModalProvider>
       <PremiumModalProvider>
-        <SiteHeader user={session.user} />
-        <main className="flex-1 bg-white">
-          <div className="max-w-7xl mx-auto w-full px-6 py-8">{children}</div>
-        </main>
-        <PublicFooter />
+        <ProfileModalProvider user={session.user}>
+          <SiteHeader user={session.user} />
+          <main className="flex-1 bg-white">
+            <div className="max-w-7xl mx-auto w-full px-6 py-8">{children}</div>
+          </main>
+          <PublicFooter />
+        </ProfileModalProvider>
       </PremiumModalProvider>
     </LoginModalProvider>
   );

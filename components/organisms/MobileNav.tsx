@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Crown, UserRound, LogOut, type LucideIcon } from "lucide-react";
 import { useLoginModal } from "@/components/organisms/LoginModalProvider";
 import { usePremiumModal } from "@/components/organisms/PremiumModalProvider";
+import { useProfileModal } from "@/components/organisms/ProfileModalProvider";
 import { logout } from "@/lib/actions/auth";
 
 interface NavLink {
@@ -17,18 +18,14 @@ interface NavLink {
 interface MobileNavProps {
   links: NavLink[];
   isLoggedIn?: boolean;
-  profileHref?: string;
 }
 
-function MobileNav({
-  links,
-  isLoggedIn = false,
-  profileHref = "/dashboard",
-}: MobileNavProps) {
+function MobileNav({ links, isLoggedIn = false }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { openLogin } = useLoginModal();
   const { openPremium } = usePremiumModal();
+  const { openProfile } = useProfileModal();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -101,7 +98,7 @@ function MobileNav({
           </ul>
 
           <div className="hamburger-nav__cta">
-            <button
+            {/* <button
               type="button"
               onClick={() => {
                 setOpen(false);
@@ -111,17 +108,20 @@ function MobileNav({
             >
               <Crown size={16} strokeWidth={2.5} aria-hidden color="#58CC02" />
               Seja premium
-            </button>
+            </button> */}
             {isLoggedIn ? (
               <>
-                <Link
-                  href={profileHref}
-                  onClick={() => setOpen(false)}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    openProfile();
+                  }}
                   className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm rounded-full bg-[#57CB01] hover:bg-[#57CB01]/90 text-white font-semibold transition-colors"
                 >
                   <UserRound size={16} strokeWidth={2.5} aria-hidden />
                   Acessar meu perfil
-                </Link>
+                </button>
                 <form action={logout}>
                   <button
                     type="submit"
