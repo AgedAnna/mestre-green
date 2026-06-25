@@ -163,10 +163,21 @@ function TipDetailModal({ tip, onClose }: TipDetailModalProps) {
                   <button
                     type="button"
                     onClick={() => handleBet(offer.ticketLink || "#")}
-                    className="inline-flex items-center justify-center h-9 px-3 rounded-md text-xs font-extrabold tracking-tight truncate bg-[#040B00] text-white hover:opacity-90 transition-opacity"
+                    className="flex items-center justify-center h-9 px-3 rounded-md bg-[#0097FF] hover:opacity-90 transition-opacity overflow-hidden"
                     aria-label={`Apostar na ${offer.betHouseName}`}
                   >
-                    {offer.betHouseName}
+                    {offer.betHouseImageLink ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={offer.betHouseImageLink}
+                        alt={offer.betHouseName}
+                        className="h-5 w-auto max-w-[120px] object-contain"
+                      />
+                    ) : (
+                      <span className="truncate text-xs font-extrabold text-white">
+                        {offer.betHouseName}
+                      </span>
+                    )}
                   </button>
                   <OddPill
                     value={offer.odd.toFixed(2)}
